@@ -1,24 +1,41 @@
-/* Class returns a PathStrategy type given the strategy name
- * */
-
 package mvc;
-
 import java.util.Queue;
 
+/**
+ * Class returns a PathStrategy type given the strategy name
+ * @author Tahmid Alam
+ */
 public class PathFactory {
 	
-	public static PathStrategy set(String strategyName, PathBoard board, Queue<Step> steps) { // TODO: potentially need to add main thing as parameter
+	/**
+	 * @param strategyName: A path finding algorithm name such as BFS, DFS, ASTAR, etc
+	 * @param board: the main PathBoard
+	 * @param steps: The main steps queue
+	 * @return the specified PathStrategy
+	 */
+	public static PathStrategy set(String strategyName, PathBoard board, Queue<Step> steps) {
 		
-		PathStrategy strategy = null;
-		if(strategyName.contentEquals("BFS")) {
+		PathStrategy strategy = new BFSStrategy(board, steps);
+		
+		switch(strategyName) {
+		case "BFS":
 			strategy = new BFSStrategy(board, steps);
-		} else if(strategyName.contentEquals("DFS")) {
+			break;
+			
+		case "DFS":
 			//strategy = new DFSStrategy(board, steps);
-		} else if(strategyName.contentEquals("DIK")) {
-			//TODO
-		} else if(strategyName.contentEquals("ASTAR")) {
-			//TODO
+			break;
+			
+		case "DIK":
+			//strategy = new DIKStrategy(board, steps);
+			break;
+			
+		case "ASTAR":
+			//strategy = new ASTARStrategy(board, steps);
+			break;
+			
 		}
+
 		return strategy;
 	}
 }
