@@ -26,7 +26,7 @@ public class BFSStrategy extends PathStrategy {
 				if(child.color == Node.WHITE || child.color == Node.START || child.color == Node.FINISH) {
 					
 					child.color = Node.GREY;		
-					steps.add(new Step(child.row, child.col, Node.GREY));
+					steps.add(new Step(child.row, child.col, child.color));
 			
 					child.distance = parent.distance + 1;
 					q.add(child);

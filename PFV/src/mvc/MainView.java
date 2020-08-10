@@ -1,12 +1,14 @@
 package mvc;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -26,7 +28,10 @@ public class MainView extends VBox implements Observer {
 	
 	//TODO: instead of dragging along the board and destroying it when placing start and finish we should
 	// 		place on release
-	
+	private String style = "-fx-background-radius: 0;"// Remove the rounded borders
+			+ " -fx-border-color: #000000;"// Black
+			+ " -fx-border-width: 0.5px;"
+			+ " -fx-background-color: #e0e0e0;";// Grey
 	
 	private int windowSize = 700;
 	private double tileSize = 0.02; // Size of tile from 0.02 to 0.99
@@ -36,7 +41,7 @@ public class MainView extends VBox implements Observer {
 	private Button btnClearWalls;
 	
 	private Slider slider;
-	//TODO: drop down to select algorithm
+	private ComboBox<String> dropDown;
 	
 	private Canvas canvas;
 	private GraphicsContext gc;
@@ -56,6 +61,10 @@ public class MainView extends VBox implements Observer {
 		this.transformer.appendScale(
 				this.windowSize/(float)(this.model.getRowDim()),
 				this.windowSize/(float)(this.model.getColDim()));
+		
+		this.dropDown = new ComboBox<String>(FXCollections.observableArrayList(PathFactory.ALGORITHMLIST));
+		this.dropDown.setOnAction(this::dropDownHandler);
+		this.dropDown.setValue(PathFactory.ALGORITHMLIST[0]);
 		
 		this.slider = new Slider(2, 100, 50);
 		
@@ -84,12 +93,14 @@ public class MainView extends VBox implements Observer {
 		this.drawLines();
 		
 		// Set the button style
-		btnStyle(btnPathFind);
-		btnStyle(btnClear);
-		btnStyle(btnClearWalls);
+		this.btnPathFind.setStyle(this.style);
+		this.btnClear.setStyle(this.style);
+		this.btnClearWalls.setStyle(this.style);
+		this.dropDown.setStyle(this.style);
 		
 		this.hbox = new HBox();
-		this.hbox.getChildren().addAll(this.btnPathFind, this.btnClear, this.btnClearWalls, this.slider);
+		this.hbox.getChildren().addAll(this.btnPathFind, this.btnClear,
+				this.btnClearWalls, this.slider, this.dropDown);
 		
 		this.getChildren().addAll(hbox, canvas);
 		
@@ -97,7 +108,10 @@ public class MainView extends VBox implements Observer {
 		
 	}
 	
-	
+	/**
+	 * Set a specified style for a button
+	 * @param btn
+	 */
 	private void btnStyle(Button btn) {
 		btn.setStyle("-fx-background-radius: 0;"// Remove the rounded borders
 				+ " -fx-border-color: #000000;"// Black
@@ -118,6 +132,12 @@ public class MainView extends VBox implements Observer {
 	private void btnHandlerVisualize(ActionEvent event) {
 		model.findPath();
 	}
+	
+	
+	private void dropDownHandler(ActionEvent event) {
+		model.setStrategy(dropDown.getValue());
+	}
+	
 	
 	/**
 	 * Update the drawMode based on the tile pressed 

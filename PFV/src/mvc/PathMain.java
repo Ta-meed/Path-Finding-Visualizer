@@ -69,6 +69,7 @@ public class PathMain extends Observable {
 	
 	public void clearBoard() {
 		this.board.clearBoard();
+		this.steps.clear();
 		this.notifyObservers();
 	}
 	
@@ -96,7 +97,7 @@ public class PathMain extends Observable {
 	
 	public void setStrategy(String strategyName) {
 		this.board.clearBoard();
-		this.steps.clear();
+		//this.steps.clear();
 		this.strat = PathFactory.set(strategyName, this.board, this.steps);	
 	}
 
