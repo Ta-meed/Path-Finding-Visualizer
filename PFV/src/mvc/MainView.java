@@ -24,32 +24,38 @@ public class MainView extends VBox implements Observer {
 	// 		place on release
 	
 	
-	private int size = 700;
+	private int windowSize = 700;
+	private double tileSize = 0.02; // Size of tile from 0.02 to 0.99
 	
 	private Button btnPathFind;
 	private Button btnClear;
 	private Button btnClearWalls;
 	
-	private Canvas canvas;
-	//TODO: drop down to select algorithm
 	private Slider slider;
+	//TODO: drop down to select algorithm
+	
+	private Canvas canvas;
+	private GraphicsContext gc;
 	
 	private Affine transformer;
 	private PathMain model;
-	private int drawMode = Node.WALL;
+	private int drawMode = Node.WALL; // Used to identify what tile to place on drag
 	
 	private HBox hbox;
 	
-	
 	public MainView(PathMain model) {
-		
 		
 		this.model = model;
 		this.model.attach(this);
 		
 		this.transformer = new Affine();
-		this.transformer.appendScale(this.size/(float)(this.model.getRowDim()) , this.size/(float)(this.model.getColDim()));
+		this.transformer.appendScale(
+				this.windowSize/(float)(this.model.getRowDim()),
+				this.windowSize/(float)(this.model.getColDim()));
 		
+		this.slider = new Slider(2, 100, 50);
+		
+		// Set the button handlers
 		this.btnPathFind = new Button("Visualize");
 		this.btnPathFind.setOnAction(this::btnHandlerVisualize);
 		
@@ -59,12 +65,21 @@ public class MainView extends VBox implements Observer {
 		this.btnClearWalls = new Button("Clear Walls");
 		this.btnClearWalls.setOnAction(this::btnHandlerClearWalls);
 		
-		this.slider = new Slider(2, 100, 50);
-		
-		this.canvas = new Canvas(size, size);
+		// Set the canvas handlers
+		this.canvas = new Canvas(this.windowSize, this.windowSize);
 		this.canvas.setOnMousePressed(this::canvasHandlerPressed);
 		this.canvas.setOnMouseDragged(this::canvasHandlerDragged);
 		
+		// Set the transformation
+		this.gc = this.canvas.getGraphicsContext2D();
+		this.gc.setTransform(this.transformer);
+		
+		// Draw the background
+		this.gc.setFill(Color.GHOSTWHITE);
+		this.gc.fillRect(0, 0, this.model.getRowDim(), this.model.getRowDim());
+		this.drawLines();
+		
+		// Set the button style
 		btnStyle(btnPathFind);
 		btnStyle(btnClear);
 		btnStyle(btnClearWalls);
@@ -73,6 +88,8 @@ public class MainView extends VBox implements Observer {
 		this.hbox.getChildren().addAll(this.btnPathFind, this.btnClear, this.btnClearWalls, this.slider);
 		
 		this.getChildren().addAll(hbox, canvas);
+		
+
 		
 	}
 	
@@ -172,29 +189,21 @@ public class MainView extends VBox implements Observer {
 	
 	@Override
 	public void update(Observable o) {
-		GraphicsContext g = this.canvas.getGraphicsContext2D();
-		g.setTransform(this.transformer);
 		
 		if(model.steps.size() > 0) {
-			this.stepByStep(g);
+			this.stepByStep();
 			
 		} else {
-			
 			// Bypass updating the whole board by only updating a single cell
 			if(o instanceof Node) {
 				Node cell = (Node)o;
-				this.tileColorSet(g, cell.row, cell.col, cell.color);
+				this.tileColorSet(cell.row, cell.col, cell.color);
 				
-				if(cell.color != Node.WALL) {
-					this.drawLines(g);
-				}
-				
-			// update whole board
+			// Update the whole board
 			} else {
 				for(int row = 0; row < this.model.getRowDim(); row++) {
 					for(int col = 0; col < this.model.getColDim(); col++) {
-						this.tileColorSet(g, row, col, this.model.get(row, col).color);
-						this.drawLines(g);
+						this.tileColorSet(row, col, this.model.get(row, col).color);
 					}
 				}
 			}
@@ -203,31 +212,28 @@ public class MainView extends VBox implements Observer {
 	}
 	
 	
-	private void drawLines(GraphicsContext g) {
+	private void drawLines() {
 
-		g.closePath();
-		g.beginPath();
-		g.setStroke(Color.LIGHTBLUE);
-		g.setLineWidth(0.02f);
+		this.gc.closePath();
+		this.gc.beginPath();
+		this.gc.setStroke(Color.LIGHTBLUE);
+		this.gc.setLineWidth(0.02f);
 		
 		for(int col = 0; col <= this.model.getColDim(); col++) {
-			g.strokeLine(col, 0, col, this.model.getRowDim());
-			g.strokeLine(0, col, this.model.getColDim(), col);
+			this.gc.strokeLine(col, 0, col, this.model.getRowDim());
+			this.gc.strokeLine(0, col, this.model.getColDim(), col);
 		}
 		
 	}
 	
 
-	private void stepByStep(GraphicsContext g) {
+	private void stepByStep() {
 			
-		Timeline timeline = new Timeline(new KeyFrame(Duration.millis((int)slider.getValue()), e -> {
+		Timeline timeline = new Timeline(new KeyFrame(Duration.millis((int)this.slider.getValue()), e -> {
+			
 			Step curr = model.steps.poll();
-			
 			if(curr == null) return;
-			
-			this.tileColorSet(g, curr.row, curr.col, curr.color);
-			this.drawLines(g);
-			
+			this.tileColorSet(curr.row, curr.col, curr.color);
 		}));
 		
 		timeline.setCycleCount(model.steps.size());
@@ -238,45 +244,45 @@ public class MainView extends VBox implements Observer {
 	/**
 	 * Changes the tile to the specified color at (row, col)
 	 * 
-	 * @param g: GraphicsContext from Canvas
 	 * @param row: row in board from {0, model.col}
 	 * @param col: column in board from {0, model.col}
 	 * @param color: Integer representing the color in {-1, 0, 1, 2, 3, 4, 5, 10}
 	 */
-	private void tileColorSet(GraphicsContext g, int row, int col, int color) {
+	private void tileColorSet(int row, int col, int color) {
 		
 		switch(color) {
 		case Node.START:
-			g.setFill(Color.GREENYELLOW);
+			this.gc.setFill(Color.GREENYELLOW);
 			break;
 			
 		case Node.FINISH:
-			g.setFill(Color.GOLD);
+			this.gc.setFill(Color.GOLD);
 			break;
 		
 		case Node.WALL:
-			g.setFill(Color.DARKSLATEGREY);
+			this.gc.setFill(Color.DARKSLATEGREY);
 			break;
 			
 		case Node.PATH:
-			g.setFill(Color.YELLOW);
+			this.gc.setFill(Color.YELLOW);
 			break;
 			
 		case Node.WHITE:
-			g.setFill(Color.GHOSTWHITE);
+			this.gc.setFill(Color.GHOSTWHITE);
 			break;
 			
 		case Node.GREY:
-			g.setFill(Color.DEEPPINK);
+			this.gc.setFill(Color.DEEPPINK);
 			break;
 			
 		case Node.BLACK:
-			g.setFill(Color.DARKTURQUOISE);
+			this.gc.setFill(Color.DARKTURQUOISE);
 			break;
 		}
 		
-		g.clearRect(col, row, 1, 1);
-		g.fillRect(col, row, 1, 1);
+		// Remove the previous tile, add the new tile
+		this.gc.clearRect(col + this.tileSize, row + this.tileSize, 1 - this.tileSize*2, 1 - this.tileSize*2);
+		this.gc.fillRect(col + this.tileSize, row + this.tileSize, 1 - this.tileSize*2, 1 - this.tileSize*2);
 		
 	}
 
