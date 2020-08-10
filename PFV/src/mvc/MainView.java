@@ -17,7 +17,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.util.Duration;
-
+/**
+ * Class controls all GUI components
+ * @author Tahmid Alam
+ *
+ */
 public class MainView extends VBox implements Observer {
 	
 	//TODO: instead of dragging along the board and destroying it when placing start and finish we should
@@ -115,6 +119,12 @@ public class MainView extends VBox implements Observer {
 		model.findPath();
 	}
 	
+	/**
+	 * Update the drawMode based on the tile pressed 
+	 * update the tile on the tile that was pressed
+	 * 
+	 * @param event MouseEvent
+	 */
 	private void canvasHandlerPressed(MouseEvent event) {
 		
 		try {
@@ -123,20 +133,20 @@ public class MainView extends VBox implements Observer {
 			int row = (int)point.getY();
 			int col = (int)point.getX();
 			
-			Node cell = this.model.get(row, col);
+			Node tile = this.model.get(row, col);
 			
-			if(cell.color != Node.WALL && cell.color != Node.START && cell.color != Node.FINISH) {
+			if(tile.color != Node.WALL && tile.color != Node.START && tile.color != Node.FINISH) {
 				drawMode = Node.WALL;
 				this.model.placeWall(row, col);
 				
-			} else if(cell.color == Node.WALL) {
+			} else if(tile.color == Node.WALL) {
 				drawMode = Node.WHITE;
 				this.model.removeWall(row, col);
 				
-			} else if(cell.color == Node.START) {
+			} else if(tile.color == Node.START) {
 				drawMode = Node.START;
 				
-			} else if(cell.color == Node.FINISH) {
+			} else if(tile.color == Node.FINISH) {
 				drawMode = Node.FINISH;
 			}
 			
@@ -146,6 +156,12 @@ public class MainView extends VBox implements Observer {
 	}
 	
 	
+	/**
+	 * Move, add, or remove tiles when the mouse is being dragged to the mouse's current position
+	 * based on the current drawMode variable
+	 * 
+	 * @param event mouseEvent
+	 */
 	private void canvasHandlerDragged(MouseEvent event) {
 		
 		try {
@@ -154,6 +170,7 @@ public class MainView extends VBox implements Observer {
 			int row = (int)point.getY();
 			int col = (int)point.getX();
 			
+			// Round the coordinates to the nearest tile if the mouse is off the board
 			if(row >= this.model.getRowDim()) {
 				row = this.model.getRowDim() - 1;
 				
@@ -168,6 +185,7 @@ public class MainView extends VBox implements Observer {
 				col = 0;
 			}
 			
+			// Draw the specified tile
 			if(drawMode == Node.WALL && this.model.get(row, col).color != Node.WALL) {
 				this.model.placeWall(row, col);
 				
@@ -211,7 +229,9 @@ public class MainView extends VBox implements Observer {
 		}
 	}
 	
-	
+	/**
+	 * Draws the separating lines for the tiles on the board
+	 */
 	private void drawLines() {
 
 		this.gc.closePath();
@@ -223,10 +243,11 @@ public class MainView extends VBox implements Observer {
 			this.gc.strokeLine(col, 0, col, this.model.getRowDim());
 			this.gc.strokeLine(0, col, this.model.getColDim(), col);
 		}
-		
 	}
 	
-
+	/**
+	 * Updates the board to show each step the algorithm took
+	 */
 	private void stepByStep() {
 			
 		Timeline timeline = new Timeline(new KeyFrame(Duration.millis((int)this.slider.getValue()), e -> {
@@ -238,7 +259,6 @@ public class MainView extends VBox implements Observer {
 		
 		timeline.setCycleCount(model.steps.size());
 		timeline.play();
-		return;
 	}
 	
 	/**
