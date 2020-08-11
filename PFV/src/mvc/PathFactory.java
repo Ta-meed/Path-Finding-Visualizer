@@ -7,7 +7,7 @@ import java.util.Queue;
  */
 public class PathFactory {
 	
-	public static final String[] ALGORITHMLIST = {"BFS", "DFS", "DIK", "ASTAR"};
+	public static final String[] ALGORITHMLIST = {"BFS", "DFS", "Dijkstra", "A*"};
 	
 	/**
 	 * @param strategyName: A path finding algorithm name such as BFS, DFS, ASTAR, etc
@@ -28,11 +28,11 @@ public class PathFactory {
 			strategy = new DFSStrategy(board, steps);
 			break;
 			
-		case "DIK":
+		case "Dijkstra":
 			//strategy = new DIKStrategy(board, steps);
 			break;
 			
-		case "ASTAR":
+		case "A*":
 			//strategy = new ASTARStrategy(board, steps);
 			break;
 			

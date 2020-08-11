@@ -15,7 +15,6 @@ public class DFSStrategy extends PathStrategy {
 		DFSVisit(time, start, start, finish);
 		start.color = Node.START;
 		finish.color = Node.FINISH;
-		//findPath(start, end);
 	}
 	
 	private void DFSVisit(int[] time, Node parent, Node start, Node finish) {
@@ -39,7 +38,9 @@ public class DFSStrategy extends PathStrategy {
 			}
 		}
 		
-		// Add the final black, avoid start and finihs
+		steps.add(new Step(parent.row, parent.col, Node.BLACK));
+		
+		// Add the final black, avoid start and finish
 		if(parent == start) {
 			steps.add(new Step(parent.row, parent.col, Node.START));
 		} else if(parent == finish) {
@@ -53,20 +54,13 @@ public class DFSStrategy extends PathStrategy {
 	}
 	
 	public void findPath(Node start, Node finish) {
-		/*
-		 * Starting from the end backtrack to the start by following the first discovered neighbors
-		 * print the board following the path
-		 */
+		
 		ArrayList<Node> path = new ArrayList<Node>();
 		Node curr = finish;
 		path.add(finish);
 		
-		
 		// End point is unreachable
-		if(finish.timeDiscover == -1) {
-			return;
-		}
-		
+		if(finish.timeDiscover == -1) return;
 		
 		// Find a short path by going to the neighbor with the earliest discovery time
 		while(curr != start) {

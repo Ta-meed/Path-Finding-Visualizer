@@ -63,6 +63,7 @@ public class PathMain extends Observable {
 	}
 	
 	public void clearWalls() {
+		this.steps.clear();
 		this.board.clearWalls();
 		this.notifyObservers();
 	}
